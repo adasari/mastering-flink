@@ -5,24 +5,30 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.base.source.reader.RecordEmitter;
 import org.apache.flink.connector.base.source.reader.SingleThreadMultiplexSourceReaderBase;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitReader;
-import org.apache.flink.types.Row;
 
 import java.util.Map;
 
 public class DatabaseSourceReader extends SingleThreadMultiplexSourceReaderBase<
-        Row, // The record type produced by the source
-        Row, // The intermediate record type
+        Record, // The record type produced by the source
+        Record, // The intermediate record type
         DatabaseSplit, // The split type used by the reader
         DatabaseSplitState // split state
         > {
 
-    public DatabaseSourceReader(SplitReader<Row, DatabaseSplit> splitReader, RecordEmitter<Row, Row, DatabaseSplitState> recordEmitter, Configuration config, SourceReaderContext context) {
+    public DatabaseSourceReader(SplitReader<Record, DatabaseSplit> splitReader, RecordEmitter<Record, Record, DatabaseSplitState> recordEmitter, Configuration config, SourceReaderContext context) {
         super(() -> splitReader, recordEmitter, config, context);
     }
 
     @Override
-    protected void onSplitFinished(Map<String, DatabaseSplitState> map) {
+    public void start() {
+        if (getNumberOfCurrentlyAssignedSplits() == 0) {
+            context.sendSplitRequest();
+        }
+    }
 
+    @Override
+    protected void onSplitFinished(Map<String, DatabaseSplitState> map) {
+        context.sendSplitRequest();
     }
 
     @Override

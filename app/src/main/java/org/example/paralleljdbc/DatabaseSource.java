@@ -17,7 +17,7 @@ import java.util.List;
  * Instructions:
  * https://cwiki.apache.org/confluence/display/FLINK/FLIP-27%3A+Refactor+Source+Interface
  */
-public class DatabaseSource implements Source<Row, DatabaseSplit, DatabaseSplitEnumeratorState>, ResultTypeQueryable<Row> {
+public class DatabaseSource implements Source<Record, DatabaseSplit, DatabaseSplitEnumeratorState>, ResultTypeQueryable<Row> {
     private final String jdbcUrl;
     private final String username;
     private final String password;
@@ -38,7 +38,7 @@ public class DatabaseSource implements Source<Row, DatabaseSplit, DatabaseSplitE
     }
 
     @Override
-    public SourceReader<Row, DatabaseSplit> createReader(SourceReaderContext readerContext) throws Exception {
+    public SourceReader<Record, DatabaseSplit> createReader(SourceReaderContext readerContext) throws Exception {
         FutureCompletingBlockingQueue<RecordsWithSplitIds<Row>> elementsQueue = new FutureCompletingBlockingQueue<>();
         return new DatabaseSourceReader(new DatabaseSplitReader(readerContext, config, jdbcUrl, username, password), new DatabaseSplitRecordEmitter(), config, readerContext);
     }

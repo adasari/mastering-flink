@@ -7,19 +7,14 @@ import org.apache.flink.connector.base.source.reader.RecordsWithSplitIds;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitReader;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitsAddition;
 import org.apache.flink.connector.base.source.reader.splitreader.SplitsChange;
-import org.apache.flink.types.Row;
-import org.apache.flink.types.RowKind;
-import org.apache.flink.util.Preconditions;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayDeque;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Queue;
 
-public class DatabaseSplitReader implements SplitReader<Row, DatabaseSplit> {
+public class DatabaseSplitReader implements SplitReader<Record, DatabaseSplit> {
 
     private final Configuration config;
     @Nullable
@@ -50,10 +45,10 @@ public class DatabaseSplitReader implements SplitReader<Row, DatabaseSplit> {
 
 
     @Override
-    public RecordsWithSplitIds<Row> fetch() throws IOException {
+    public RecordsWithSplitIds<Record> fetch() throws IOException {
         boolean couldFetch = checkSplitOrStartNext();
         if (!couldFetch) {
-            return new RecordsBySplits.Builder<Row>().build();
+            return new RecordsBySplits.Builder<Record>().build();
         }
 
         if (!hasNextRecordCurrentSplit) {
@@ -61,16 +56,16 @@ public class DatabaseSplitReader implements SplitReader<Row, DatabaseSplit> {
         }
 
         assert currentSplit != null;
-        RecordsBySplits.Builder<Row> recordsBuilder =
+        RecordsBySplits.Builder<Record> recordsBuilder =
                 new RecordsBySplits.Builder<>();
 //        int batch = this.splitReaderFetchBatchSize;
         int batch = 100;
         while (batch > 0 && hasNextRecordCurrentSplit) {
             try {
-                Row record = new Row(RowKind.INSERT, 0);
+                Record record = new Record();
                 // populate row from result set
-                record.setField("table", currentSplit.splitId());
-                record.setField("id", resultSet.getLong("id"));
+                record.setTableName(currentSplit.splitId());
+                record.setId(resultSet.getLong("id"));
                 recordsBuilder.add(currentSplit.splitId(), record);
                 batch--;
                 hasNextRecordCurrentSplit = resultSet.next();
@@ -180,10 +175,10 @@ public class DatabaseSplitReader implements SplitReader<Row, DatabaseSplit> {
         statement.setFetchSize(1000);
     }
 
-    private RecordsWithSplitIds<Row> finishSplit() {
+    private RecordsWithSplitIds<Record> finishSplit() {
         closeResultSetAndStatement();
 
-        RecordsBySplits.Builder<Row> builder = new RecordsBySplits.Builder<>();
+        RecordsBySplits.Builder<Record> builder = new RecordsBySplits.Builder<>();
         assert currentSplit != null;
         builder.addFinishedSplit(currentSplit.splitId());
         currentSplit = null;

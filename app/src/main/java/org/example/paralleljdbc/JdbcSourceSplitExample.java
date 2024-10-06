@@ -18,7 +18,7 @@ public class JdbcSourceSplitExample {
         DatabaseSource dbSource = new DatabaseSource("jdbc:postgresql://localhost:5432/test",
                 "postgres", "postgres", tables, config);
 
-        DataStream<Row> dataStream = env.fromSource(dbSource, WatermarkStrategy.noWatermarks(), "DatabaseSource");
+        DataStream<Record> dataStream = env.fromSource(dbSource, WatermarkStrategy.noWatermarks(), "DatabaseSource");
         dataStream.print();
 
         env.execute("Parallel table Jdbc example");
