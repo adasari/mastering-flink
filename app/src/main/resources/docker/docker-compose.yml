@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  jobmanager:
+    image: flink:1.20.0-scala_2.12-java11
+    container_name: flink-jobmanager
+    hostname: jobmanager
+    ports:
+      - "8081:8081"  # Expose the Flink Web UI port
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+    command: jobmanager
+
+  taskmanager:
+    image: flink:1.20.0-scala_2.12-java11
+    hostname: taskmanager
+    depends_on:
+      - jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+    command: taskmanager
+    deploy:
+      replicas: 2  # Set number of task manager instances (optional)
+  
+  postgres:
+    image: postgres:11.9
+    restart: always
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "idle_in_transaction_session_timeout=1000s"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test
+    ports:
+      - '5432:5432'
+
+networks:
+  default:
+    driver: bridge
+

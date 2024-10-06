@@ -17,7 +17,7 @@ import java.util.List;
  * Instructions:
  * https://cwiki.apache.org/confluence/display/FLINK/FLIP-27%3A+Refactor+Source+Interface
  */
-public class DatabaseSource implements Source<Record, DatabaseSplit, DatabaseSplitEnumeratorState>, ResultTypeQueryable<Row> {
+public class DatabaseSource implements Source<Record, DatabaseSplit, DatabaseSplitEnumeratorState>, ResultTypeQueryable<Record> {
     private final String jdbcUrl;
     private final String username;
     private final String password;
@@ -65,7 +65,7 @@ public class DatabaseSource implements Source<Record, DatabaseSplit, DatabaseSpl
     }
 
     @Override
-    public TypeInformation<Row> getProducedType() {
-        return TypeInformation.of(Row.class);
+    public TypeInformation<Record> getProducedType() {
+        return TypeInformation.of(Record.class);
     }
 }
