@@ -22,6 +22,11 @@ dependencies {
     implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
 
     implementation("org.postgresql:postgresql:42.7.4")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
+    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
+    implementation("org.apache.logging.log4j:log4j-1.2-api:2.17.1")
+    implementation("org.slf4j:slf4j-api:1.7.36")
 
 //    implementation("org.apache.flink:flink-scala_2.12:1.20.0")  // Use the same version as your Flink Docker image
 //    implementation("org.apache.flink:flink-streaming-scala_2.12:1.20.0")

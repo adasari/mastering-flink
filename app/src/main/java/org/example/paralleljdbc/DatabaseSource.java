@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Custom database source that uses source splits to handle multiple tables. i.e. one table is once split.
  *
- * Instructions: 
+ * Instructions:
  * https://cwiki.apache.org/confluence/display/FLINK/FLIP-27%3A+Refactor+Source+Interface
  */
 public class DatabaseSource implements Source<Row, DatabaseSplit, DatabaseSplitEnumeratorState>, ResultTypeQueryable<Row> {
