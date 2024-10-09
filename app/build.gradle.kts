@@ -4,9 +4,11 @@
  * This generated file contains a sample Scala application project to get you started.
  * For more details on building Java & JVM projects, please refer to https://docs.gradle.org/8.10.2/userguide/building_java_projects.html in the Gradle documentation.
  */
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -20,6 +22,11 @@ dependencies {
     implementation("org.apache.flink:flink-clients:1.20.0")
     implementation("org.apache.flink:flink-connector-base:1.20.0")
     implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
+
+    implementation("org.apache.flink:flink-table-api-java:1.20.0")
+    implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")
+
+
 
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
@@ -41,5 +48,15 @@ tasks.withType<JavaCompile> {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "org.example.paralleljdbc.JdbcSourceSplitExample"
+}
+
+tasks.withType<ShadowJar> {
+    archiveBaseName.set("app-uber") // Set the base name for your jar
+    archiveClassifier.set("")         // No classifier for the main jar
+    archiveVersion.set("")            // If you want to omit the version number in the jar name
+    mergeServiceFiles()               // Merge service files (e.g., for META-INF/services)
+    manifest {
+        attributes["Main-Class"] = "org.example.paralleljdbc.JdbcSourceSplitExample" // Replace with your main class
+    }
 }

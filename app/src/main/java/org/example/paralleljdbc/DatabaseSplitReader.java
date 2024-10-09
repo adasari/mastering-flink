@@ -66,6 +66,7 @@ public class DatabaseSplitReader implements SplitReader<Record, DatabaseSplit> {
                 // populate row from result set
                 record.setTableName(currentSplit.splitId());
                 record.setId(resultSet.getLong("id"));
+                record.setHostName(currentSplit.getHostName() + "_" + Thread.currentThread().getName());
                 recordsBuilder.add(currentSplit.splitId(), record);
                 batch--;
                 hasNextRecordCurrentSplit = resultSet.next();

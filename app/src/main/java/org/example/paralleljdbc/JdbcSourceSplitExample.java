@@ -4,21 +4,26 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.types.Row;
 
 import java.util.List;
 
 
 public class JdbcSourceSplitExample {
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
+
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(3);
+//        StreamExecutionEnvironment env = StreamExecutionEnvironment.createRemoteEnvironment("localhost", 8081,
+//                "/Users/ADASARI/work/workspace/scala/mastering-flink/app/build/libs/app-uber.jar",
+//                "/Users/ADASARI/work/workspace/scala/mastering-flink/app/src/main/resources/postgresql-42.7.3.jar"
+//        );
         List<String> tables = List.of("products", "users");
 
         Configuration config = new Configuration();
         DatabaseSource dbSource = new DatabaseSource("jdbc:postgresql://localhost:5432/test",
                 "postgres", "postgres", tables, config);
 
-        DataStream<Record> dataStream = env.fromSource(dbSource, WatermarkStrategy.noWatermarks(), "DatabaseSource");
+        DataStream<Record> dataStream = env.fromSource(dbSource, WatermarkStrategy.noWatermarks(), "DatabaseSource")
+                .setParallelism(2);
         dataStream.print();
 
         env.execute("Parallel table Jdbc example");

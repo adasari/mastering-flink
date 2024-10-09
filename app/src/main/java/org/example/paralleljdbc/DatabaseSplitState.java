@@ -10,11 +10,11 @@ import org.apache.flink.api.connector.source.SourceSplit;
 public class DatabaseSplitState extends DatabaseSplit {
 
     public DatabaseSplitState(DatabaseSplit split) {
-        super(split.getTableName());
+        super(split.getTableName(), split.getHostName());
     }
 
     public DatabaseSplit toDatabaseSplit() {
-        return new DatabaseSplit(getTableName());
+        return new DatabaseSplit(getTableName(), getHostName());
     }
 
 }

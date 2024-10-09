@@ -30,7 +30,7 @@ public class DatabaseSplitEnumerator implements SplitEnumerator<DatabaseSplit, D
         // Logic to handle split requests (if needed)
         String nextTable = this.remainingTables.poll();
         if (nextTable != null) {
-            this.context.assignSplit(new DatabaseSplit(nextTable), subtaskId);
+            this.context.assignSplit(new DatabaseSplit(nextTable, requesterHostname), subtaskId);
         } else {
             this.context.signalNoMoreSplits(subtaskId);
         }
