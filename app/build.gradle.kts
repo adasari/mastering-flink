@@ -14,16 +14,20 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    maven("https://repository.apache.org/content/repositories/snapshots/")
 }
 
 dependencies {
-    implementation("org.apache.flink:flink-java:1.20.0")  // Use the same version as your Flink Docker image
-    implementation("org.apache.flink:flink-streaming-java:1.20.0")
-    implementation("org.apache.flink:flink-clients:1.20.0")
-    implementation("org.apache.flink:flink-connector-base:1.20.0")
+    implementation("org.apache.flink:flink-java:2.0-SNAPSHOT")  // Use the same version as your Flink Docker image
+    implementation("org.apache.flink:flink-streaming-java:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-core:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-clients:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-connector-base:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-file-sink-common:2.0-SNAPSHOT")
     implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
+    implementation("org.apache.flink:flink-connector-datagen:2.0-SNAPSHOT")
 
-    implementation("org.apache.flink:flink-table-api-java:1.20.0")
+    implementation("org.apache.flink:flink-table-api-java:2.0-SNAPSHOT")
     implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")
 
 
