@@ -1,6 +1,5 @@
 package org.example.customsink;
 
-import org.apache.flink.api.common.operators.ProcessingTimeService;
 import org.apache.flink.api.connector.sink2.*;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.streaming.api.connector.sink2.CommittableMessage;
@@ -26,6 +25,11 @@ public class CustomSink implements Sink<Record>, SupportsCommitter<FileSinkCommi
         this.basePath = basePath;
     }
 
+
+    @Override
+    public SinkWriter<Record> createWriter(InitContext initContext) throws IOException {
+        return null;
+    }
 
     @Override
     public SinkWriter<Record> createWriter(WriterInitContext context) throws IOException {

@@ -10,6 +10,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestartStrategyOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import java.util.Properties;
+
 public class PostgresParallelSourceExample {
 
     public static void main(String[] args) throws Exception {
@@ -17,6 +19,8 @@ public class PostgresParallelSourceExample {
         DebeziumDeserializationSchema<String> deserializer =
                 new JsonDebeziumDeserializationSchema();
 
+        Properties properties = new Properties();
+        properties.setProperty("connector.class", "test.connector.PostgresConnector");
         JdbcIncrementalSource<String> postgresIncrementalSource =
                 PostgresSourceBuilder.PostgresIncrementalSource.<String>builder()
                         .startupOptions(StartupOptions.snapshot())
@@ -24,29 +28,28 @@ public class PostgresParallelSourceExample {
                         .port(5432)
                         .database("test")
                         .schemaList("public")
-//                        .tableList("public.products")
                         .username("postgres")
                         .password("postgres")
-                        .slotName("flink")
-                        .decodingPluginName("pgoutput") // use pgoutput for PostgreSQL 10+
+                        .slotName("flinkpostgres3")
+                        .decodingPluginName("pgoutput")
                         .deserializer(deserializer)
-                        .splitSize(2) // the split size of each snapshot split
+                        .debeziumProperties(properties)
                         .build();
 
-        // https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/ops/state/task_failure_recovery/#restart-strategies
         Configuration config = new Configuration();
         config.set(RestartStrategyOptions.RESTART_STRATEGY, "none");
         config.setString("heartbeat.interval", "6000000"); // 100 minutes
         config.setString("heartbeat.timeout", "18000000");
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(config);
-        env.enableCheckpointing(300000);
+        env.enableCheckpointing(200000000);
 
         env.fromSource(
                         postgresIncrementalSource,
                         WatermarkStrategy.noWatermarks(),
                         "PostgresParallelSource")
-                .setParallelism(2)
+                .setParallelism(1)
+
                 .print();
 
         env.execute("Output Postgres Snapshot");

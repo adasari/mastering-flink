@@ -1,8 +1,6 @@
 package org.example.customsink.bucket;
 
-import org.apache.flink.cdc.runtime.serializer.StringSerializer;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
-import org.apache.flink.core.io.SimpleVersionedSerializerAdapter;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 
 public class CustomBucketAssigner implements BucketAssigner<String, String> {
@@ -14,6 +12,7 @@ public class CustomBucketAssigner implements BucketAssigner<String, String> {
 
     @Override
     public SimpleVersionedSerializer<String> getSerializer() {
-        return new SimpleVersionedSerializerAdapter<>(StringSerializer.INSTANCE);
+//        return new SimpleVersionedSerializerAdapter<>(StringSerializer.INSTANCE);
+        return null;
     }
 }

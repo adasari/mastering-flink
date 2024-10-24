@@ -8,16 +8,9 @@ import org.apache.flink.connector.datagen.source.DataGeneratorSource;
 import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
-import org.apache.flink.streaming.api.windowing.triggers.ProcessingTimeTrigger;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.util.Collector;
-
-import java.time.Duration;
 
 
-public class App {
+public class AppCheckpoint {
 
     static class InputRecord {
         private long sequenceId;
@@ -48,8 +41,8 @@ public class App {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
         env.setParallelism(1);
-        env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
-        env.enableCheckpointing(2000);
+//        env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
+//        env.enableCheckpointing(2000);
         GeneratorFunction<Long, InputRecord> generatorFunction = index -> {
             int remainder = (int) (index % 10);
             String value = "";
@@ -93,21 +86,24 @@ public class App {
                                 Types.GENERIC(InputRecord.class)
                         );
 
-        dataStream.keyBy(InputRecord::getTable)
-                .window(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)))
-                .trigger(ProcessingTimeTrigger.create())
-                .process(new ProcessWindowFunction<InputRecord, Record, String, TimeWindow>() {
-                    /**
-                     * Returns Record object i.e. input string and window timestamp.
-                     */
-                    @Override
-                    public void process(String key, ProcessWindowFunction<InputRecord, Record, String, TimeWindow>.Context context, Iterable<InputRecord> iterable, Collector<Record> collector) throws Exception {
-                        iterable.forEach(e -> {
-                            collector.collect(new Record(e.getTable(), context.window().getStart(), e.getSequenceId()));
-                        });
-                    }
-                })
+        dataStream
+                //.keyBy(InputRecord::getTable)
+                //.window(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)))
+                //.trigger(ProcessingTimeTrigger.create())
+//                .process(new ProcessWindowFunction<InputRecord, Record, String, TimeWindow>() {
+//                    /**
+//                     * Returns Record object i.e. input string and window timestamp.
+//                     */
+//                    @Override
+//                    public void process(String key, ProcessWindowFunction<InputRecord, Record, String, TimeWindow>.Context context, Iterable<InputRecord> iterable, Collector<Record> collector) throws Exception {
+//                        iterable.forEach(e -> {
+//                            collector.collect(new Record(e.getTable(), context.window().getStart(), e.getSequenceId()));
+//                        });
+//                    }
+//                })
+                .map(e -> new Record(e.getTable(), System.currentTimeMillis(), e.getSequenceId()))
                 .sinkTo(new CustomSink("/Users/ADASARI/work/workspace/scala/mastering-flink/out"));
+
 
         env.execute("Two phase commit job");
     }

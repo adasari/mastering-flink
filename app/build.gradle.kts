@@ -18,16 +18,17 @@ repositories {
 }
 
 dependencies {
-    implementation("org.apache.flink:flink-java:2.0-SNAPSHOT")  // Use the same version as your Flink Docker image
-    implementation("org.apache.flink:flink-streaming-java:2.0-SNAPSHOT")
-    implementation("org.apache.flink:flink-core:2.0-SNAPSHOT")
-    implementation("org.apache.flink:flink-clients:2.0-SNAPSHOT")
-    implementation("org.apache.flink:flink-connector-base:2.0-SNAPSHOT")
-    implementation("org.apache.flink:flink-file-sink-common:2.0-SNAPSHOT")
+    val flink_version: String by project
+    implementation("org.apache.flink:flink-java:${flink_version}")  // Use the same version as your Flink Docker image
+    implementation("org.apache.flink:flink-streaming-java:${flink_version}")
+    implementation("org.apache.flink:flink-core:${flink_version}")
+    implementation("org.apache.flink:flink-clients:${flink_version}")
+    implementation("org.apache.flink:flink-connector-base:${flink_version}")
+    implementation("org.apache.flink:flink-file-sink-common:${flink_version}")
     implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
-    implementation("org.apache.flink:flink-connector-datagen:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-connector-datagen:${flink_version}")
 
-    implementation("org.apache.flink:flink-table-api-java:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-table-api-java:${flink_version}")
     implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")
 
 
