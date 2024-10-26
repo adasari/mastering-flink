@@ -1,22 +1,32 @@
 package org.example.filesink;
 
 import org.apache.flink.api.common.RuntimeExecutionMode;
-import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringEncoder;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
+import org.apache.flink.connector.datagen.source.DataGeneratorSource;
+import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
 import org.apache.flink.streaming.api.functions.sink.filesystem.bucketassigners.SimpleVersionedStringSerializer;
+import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
+
+import java.util.concurrent.TimeUnit;
 
 
 public class AppMain {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment();
-        env.setRuntimeMode(RuntimeExecutionMode.BATCH);
+        env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
+        env.setParallelism(1);
+        env.enableCheckpointing(5000L);
 
+        /*
         DataStream<String> input = env.fromElements(
                 "apple", "banana", "apple", "orange", "banana", "apple"
         );
@@ -39,6 +49,7 @@ public class AppMain {
         // Key by the string value (without the index)
         DataStream<String> keyedStream = indexedStream
                 .keyBy(value -> value.split(": ")[1]);  // Key by the original string (e.g., "apple", "banana")
+         */
 
         // Set up the file sink with key-based buckets
 //        final StreamingFileSink<String> sink = StreamingFileSink
@@ -51,6 +62,36 @@ public class AppMain {
 //        keyedStream.addSink(sink);
 
         // Execute the program
+
+
+        GeneratorFunction<Long, String> tableAGeneratorFunction = index -> index+ "-A";
+        long numberOfRecords = 50;
+        DataGeneratorSource<String> sourceA =
+                new DataGeneratorSource<>(
+                        tableAGeneratorFunction,
+                        numberOfRecords,
+                        RateLimiterStrategy.perSecond(1),
+                        Types.STRING);
+        DataStreamSource<String> tableADatastream =
+                env.fromSource(sourceA,
+                        WatermarkStrategy.noWatermarks(),
+                        "Table A Generator Source",
+                        Types.STRING
+                );
+        DataStream<String> keyedStream = tableADatastream
+                .keyBy(value -> value.split("-")[1]);
+        org.apache.flink.connector.file.sink.FileSink<String> sink = org.apache.flink.connector.file.sink.FileSink.
+                forRowFormat(new Path("file:///Users/ADASARI/work/learning/flink/flink-file-output"), new SimpleStringEncoder<String>("UTF-8"))
+                .withBucketAssigner(new KeyBucketAssigner())
+                .withBucketCheckInterval(5000L)
+                .withRollingPolicy(
+                        DefaultRollingPolicy.builder()
+                                .withRolloverInterval(TimeUnit.SECONDS.toMillis(100))
+//                                .withInactivityInterval(TimeUnit.SECONDS.toMillis(5))
+                                .withMaxPartSize(1024 * 1024 * 1024)
+                                .build())
+                        .build();
+        keyedStream.sinkTo(sink);
         env.execute("Batch: Keyed File Sink with Index Example");
     }
 
@@ -58,7 +99,7 @@ public class AppMain {
 
         @Override
         public String getBucketId(String element, Context context) {
-            return element.split(": ")[1];
+            return element.split("-")[1];
         }
 
         @Override

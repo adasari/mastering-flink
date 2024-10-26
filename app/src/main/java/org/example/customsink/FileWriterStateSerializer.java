@@ -2,7 +2,6 @@ package org.example.customsink;
 
 
 import org.apache.flink.core.io.SimpleVersionedSerializer;
-import org.example.paralleljdbc.DatabaseSplit;
 
 import java.io.*;
 

@@ -9,6 +9,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     application
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.freefair.lombok") version "8.10.2"
 }
 
 repositories {
@@ -26,6 +27,9 @@ dependencies {
     implementation("org.apache.flink:flink-file-sink-common:2.0-SNAPSHOT")
     implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
     implementation("org.apache.flink:flink-connector-datagen:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-avro:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-csv:2.0-SNAPSHOT")
+    implementation("org.apache.flink:flink-connector-files:2.0-SNAPSHOT")
 
     implementation("org.apache.flink:flink-table-api-java:2.0-SNAPSHOT")
     implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")

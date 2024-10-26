@@ -92,7 +92,6 @@ public class App {
                                 "Generator Source",
                                 Types.GENERIC(InputRecord.class)
                         );
-
         dataStream.keyBy(InputRecord::getTable)
                 .window(TumblingProcessingTimeWindows.of(Duration.ofSeconds(10)))
                 .trigger(ProcessingTimeTrigger.create())
