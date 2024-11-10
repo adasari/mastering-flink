@@ -19,19 +19,16 @@ repositories {
 
 dependencies {
     val flink_version: String by project
+    implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")
+    implementation("org.apache.flink:flink-core:${flink_version}")
     implementation("org.apache.flink:flink-java:${flink_version}")  // Use the same version as your Flink Docker image
     implementation("org.apache.flink:flink-streaming-java:${flink_version}")
-    implementation("org.apache.flink:flink-core:${flink_version}")
-    implementation("org.apache.flink:flink-clients:${flink_version}")
     implementation("org.apache.flink:flink-connector-base:${flink_version}")
-    implementation("org.apache.flink:flink-file-sink-common:${flink_version}")
-    implementation("org.apache.flink:flink-connector-jdbc:3.2.0-1.19")
-    implementation("org.apache.flink:flink-connector-datagen:${flink_version}")
-
+    implementation("org.apache.flink:flink-clients:${flink_version}")
     implementation("org.apache.flink:flink-table-api-java:${flink_version}")
-    implementation("org.apache.flink:flink-connector-postgres-cdc:3.2.0")
+    implementation("org.apache.flink:flink-connector-kafka:3.2.0-1.18")
 
-
+    implementation("org.apache.iceberg:iceberg-flink-1.18:1.6.1")
 
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")

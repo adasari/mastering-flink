@@ -1,6 +1,7 @@
 package org.example.cdc;
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.cdc.connectors.base.options.StartupOptions;
 import org.apache.flink.cdc.connectors.base.source.jdbc.JdbcIncrementalSource;
 import org.apache.flink.cdc.connectors.postgres.source.PostgresSourceBuilder;
@@ -10,18 +11,20 @@ import org.apache.flink.configuration.CheckpointingOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.RestartStrategyOptions;
+import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.iceberg.flink.sink.FlinkSink;
 
 import java.util.Properties;
 
-public class PostgresParallelSourceExample {
+public class PostgresToKafkaExample {
 
     public static void main(String[] args) throws Exception {
 
         DebeziumDeserializationSchema<String> deserializer =
-                new JsonDebeziumDeserializationSchema();
+                new JsonDebeziumDeserializationSchema(true);
 
         Properties properties = new Properties();
         properties.setProperty("connector.class", "test.connector.PostgresConnector");
@@ -34,10 +37,9 @@ public class PostgresParallelSourceExample {
                         .port(5432)
                         .database("test")
                         .schemaList("public")
-//                        .tableList("users")
                         .username("postgres")
                         .password("postgres")
-                        .slotName("backfillslottest03")
+                        .slotName("backfillslottest04")
                         .decodingPluginName("pgoutput")
                         .deserializer(deserializer)
                         .debeziumProperties(properties)
@@ -56,13 +58,26 @@ public class PostgresParallelSourceExample {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(config);
         env.enableCheckpointing(2000);
 
-        env.fromSource(
+        SingleOutputStreamOperator<String> stringSingleOutputStreamOperator = env.fromSource(
                         postgresIncrementalSource,
                         WatermarkStrategy.noWatermarks(),
                         "PostgresParallelSource")
-                .uid("source1")
-                .setParallelism(1)
-                .print();
+                .uid("source2")
+                .setParallelism(1);
+
+        KafkaSink<String> sink = KafkaSink.<String>builder()
+                .setBootstrapServers("localhost:9093")
+                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                        .setTopic("test-topic")
+                        .setValueSerializationSchema(new SimpleStringSchema())
+                        .setKeySerializationSchema(new SimpleStringSchema())
+                        .build()
+                )
+                .setProperty("auto.create.topics.enable", "true")
+                .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                .build();
+
+        stringSingleOutputStreamOperator.sinkTo(sink);
 
         env.execute("Output Postgres Snapshot");
     }
